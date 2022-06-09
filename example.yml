@@ -1,0 +1,10 @@
+config:
+  logLevel: info
+  listen: :9200
+  rewrite:
+    www.google.com: Google
+Host-QB:
+  type: "qbittorrent"
+  host: "http://127.0.0.1"
+  username: "admin"
+  password: "adminadmin"
