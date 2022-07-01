@@ -20,7 +20,7 @@ type QbittorrentClient struct {
 	Password   string
 	baseURL    string
 	sid        string
-	isLogin    bool
+	IsLogin    bool
 	statusReq  *http.Request
 	torrentReq *http.Request
 }
@@ -81,19 +81,26 @@ type QbittorrentTorrent struct {
 	UploadSpeed            int64   `json:"upspeed"`
 }
 
-func NewQbittorrentClient(Address, Username, Password string) *QbittorrentClient {
+type QbittorrentOptions struct {
+	Url            string
+	UserName       string
+	Password       string
+	RequestTimeOut int
+}
+
+func NewQbittorrentClient(Options QbittorrentOptions) *QbittorrentClient {
 	global.Logger.Debug("创建：QbittorrentClient")
 	c := &QbittorrentClient{
 		client:   http.DefaultClient,
-		Address:  Address,
-		Username: Username,
-		Password: Password,
-		baseURL:  fmt.Sprintf("%s/api/v2", Address),
+		Address:  Options.Url,
+		Username: Options.UserName,
+		Password: Options.Password,
+		baseURL:  fmt.Sprintf("%s/api/v2", Options.Url),
 	}
 	// 设置请求超时时长
-	c.client.Timeout = 5 * time.Second
+	c.client.Timeout = time.Second * time.Duration(Options.RequestTimeOut)
 	// 尝试登录
-	global.Logger.Debug(fmt.Sprintf("初次登录： %s", Address))
+	global.Logger.Debug(fmt.Sprintf("初次登录： %s", Options.Url))
 	if err := c.Login(); err != nil {
 		global.Logger.Error("初次登录失败", zap.Error(err))
 	}
@@ -109,26 +116,26 @@ func (c *QbittorrentClient) Login() error {
 	resp, err := http.PostForm(fmt.Sprintf("%s/auth/login", c.baseURL), loginInfo)
 	if err != nil {
 		global.Logger.Error("登录失败：", zap.Error(err))
-		c.isLogin = false
+		c.IsLogin = false
 		return err
 	}
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		global.Logger.Error("登录失败-解析错误", zap.Error(err))
-		c.isLogin = false
+		c.IsLogin = false
 		return err
 	}
 	bodyStr := string(body)
-	global.Logger.Debug("登录信息：" + bodyStr)
+	global.Logger.Debug("登录信息：" + c.Address + " " + bodyStr)
 	if err != nil {
 		global.Logger.Error("登录失败", zap.Error(err))
-		c.isLogin = false
+		c.IsLogin = false
 		return err
 	}
 	for _, cookie := range resp.Cookies() {
 		if cookie.Name == "SID" {
 			c.sid = cookie.Value
-			c.isLogin = true
+			c.IsLogin = true
 		}
 	}
 	statusReq, _ := http.NewRequest("GET", fmt.Sprintf("%s/transfer/info", c.baseURL), nil)
@@ -137,7 +144,7 @@ func (c *QbittorrentClient) Login() error {
 	torrentReq, _ := http.NewRequest("GET", fmt.Sprintf("%s/torrents/info", c.baseURL), nil)
 	torrentReq.AddCookie(&http.Cookie{Name: "SID", Value: c.sid})
 	c.torrentReq = torrentReq
-	c.isLogin = true
+	c.IsLogin = true
 	return nil
 }
 
@@ -158,7 +165,7 @@ func (c *QbittorrentClient) GetStatus() (QbittorrentStatus, error) {
 	defer resp.Body.Close()
 	global.Logger.Debug("解析返回状态" + c.Address)
 	if err := json.NewDecoder(resp.Body).Decode(&status); err != nil {
-		global.Logger.Error("解析客户端状态返回错误"  + c.Address, zap.Error(err))
+		global.Logger.Error("解析客户端状态返回错误"+c.Address, zap.Error(err))
 		return status, err
 	}
 	global.Logger.Debug("获取状态成功" + c.Address)
@@ -171,7 +178,7 @@ func (c *QbittorrentClient) GetTorrent() ([]QbittorrentTorrent, error) {
 	var torrents []QbittorrentTorrent
 	resp, err := c.client.Do(c.torrentReq)
 	if err != nil {
-		global.Logger.Error("获取种子信息失败"  + c.Address, zap.Error(err))
+		global.Logger.Error("获取种子信息失败"+c.Address, zap.Error(err))
 		return torrents, err
 	}
 	if resp.StatusCode != 200 {
@@ -182,7 +189,7 @@ func (c *QbittorrentClient) GetTorrent() ([]QbittorrentTorrent, error) {
 	defer resp.Body.Close()
 	global.Logger.Debug("解析种子信息" + c.Address)
 	if err := json.NewDecoder(resp.Body).Decode(&torrents); err != nil {
-		global.Logger.Error("解析种子信息失败" + c.Address, zap.Error(err))
+		global.Logger.Error("解析种子信息失败"+c.Address, zap.Error(err))
 		return torrents, err
 	}
 	global.Logger.Debug("获取种子信息完成" + c.Address)
