@@ -16,6 +16,9 @@ type QbittorrentCollector struct {
 	uploadBytesTotal                 *prometheus.Desc
 	downloadSpeedBytes               prometheus.Gauge
 	uploadSpeedBytes                 prometheus.Gauge
+	trackerTorrent                   *prometheus.Desc
+	trackerTorrentSizeBytes          *prometheus.Desc
+	trackerTorrentStatus             *prometheus.Desc
 	trackerTorrentDownloadBytesTotal *prometheus.Desc
 	trackerTorrentUploadBytesTotal   *prometheus.Desc
 	torrentsCount                    *prometheus.Desc
@@ -72,6 +75,24 @@ func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options
 			Help:        "upload_speed_bytes",
 			ConstLabels: ConstLabels,
 		}),
+		trackerTorrent: prometheus.NewDesc(
+			namespace+"_tracker_torrent",
+			"trackerTorrent",
+			[]string{"tracker", "torrent"},
+			ConstLabels,
+		),
+		trackerTorrentStatus: prometheus.NewDesc(
+			namespace+"_tracker_torrent_status",
+			"trackerTorrentStatus",
+			[]string{"tracker", "torrent"},
+			ConstLabels,
+		),
+		trackerTorrentSizeBytes: prometheus.NewDesc(
+			namespace+"_tracker_torrent_size_bytes",
+			"trackerTorrentSize",
+			[]string{"tracker", "torrent"},
+			ConstLabels,
+		),
 		trackerTorrentDownloadBytesTotal: prometheus.NewDesc(
 			namespace+"_tracker_torrent_download_bytes_total",
 			"trackerTorrentDownloadBytesTotal",
@@ -119,6 +140,9 @@ func (q *QbittorrentCollector) Describe(descs chan<- *prometheus.Desc) {
 	descs <- q.downloadBytesTotal
 	descs <- q.trackerTorrentDownloadBytesTotal
 	descs <- q.trackerTorrentUploadBytesTotal
+	descs <- q.trackerTorrent
+	descs <- q.trackerTorrentSizeBytes
+	descs <- q.trackerTorrentStatus
 	descs <- q.torrentsCount
 	if q.Options.MaxDownSpeed != 0 {
 		descs <- q.maxDownloadSpeedBytes.Desc()
@@ -180,6 +204,20 @@ func (q *QbittorrentCollector) Collect(metrics chan<- prometheus.Metric) {
 		if !isok {
 			trackerName = trackerAddress
 		}
+		metrics <- prometheus.MustNewConstMetric(
+			q.trackerTorrent,
+			prometheus.CounterValue,
+			float64(0),
+			torrent.Name,
+			trackerName,
+		)
+		metrics <- prometheus.MustNewConstMetric(
+			q.trackerTorrentSizeBytes,
+			prometheus.GaugeValue,
+			float64(torrent.Size),
+			torrent.Name,
+			trackerName,
+		)
 		metrics <- prometheus.MustNewConstMetric(
 			q.trackerTorrentDownloadBytesTotal,
 			prometheus.CounterValue,
@@ -277,5 +315,4 @@ func (q *QbittorrentCollector) Collect(metrics chan<- prometheus.Metric) {
 			)
 		}
 	}
-
 }
