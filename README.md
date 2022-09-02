@@ -18,21 +18,21 @@
 
 ## 数据说明
 
-| 字段                                        |    类型     | 说明                | 默认是否开启 | 完成状态 |
-|-------------------------------------------|:---------:|-------------------|:------:|:----:|
-| `pt_up`                                   |  `Gauge`  | 客户端存活状态`1：存活 0：非存活` |   ✅    |  ✅   |
-| `pt_download_bytes_total`                 | `Counter` | 客户端下载字节数          |   ✅    |  ✅   |
-| `pt_upload_bytes_total`                   | `Counter` | 客户端上传字节数          |   ✅    |  ✅   |
-| `pt_download_speed`                       |  `Gauge`  | 客户端下载速度           |   ✅    |  ✅   |
-| `pt_upload_speed`                         |  `Gauge`  | 客户端上传速度           |   ✅    |  ✅   |
-| `pt_download_speed_bytes`                 |  `Gauge`  | 客户端下载速度字节数        |   ✅    |  ✅   |
-| `pt_upload_speed_bytes`                   |  `Gauge`  | 客户端上传速度字节数        |   ✅    |  ✅   |
-| `pt_tracker_torrent`                      |  `Counter`| 种子       |    ✅    |  ✅   |
-| `pt_tracker_torrent_status`               | `Gauge`   | 种子状态  |   ✅     |  ❌   |
-| `pt_tracker_torrent_size_bytes`           |  `Gauge`  | 种子大小              |   ✅    |  ✅   |
-| `pt_tracker_torrent_download_bytes_total` | `Counter` | 种子下载字节数           |   ✅    |  ✅   |
-| `pt_tracker_torrent_upload_bytes_total`   | `Counter` | 种子上传字节数           |   ✅    |  ✅   |
-| `pt_torrents_count`                       |  `Gauge`  | 站点种子转态数量总数        |   ✅    |  ✅   |
+| 字段                                        |    类型     | 说明                      | 默认是否开启 | 完成状态 |
+|-------------------------------------------|:---------:|-------------------------|:------:|:----:|
+| `pt_up`                                   |  `Gauge`  | 客户端存活状态`1：存活 0：非存活`     |   ✅    |  ✅   |
+| `pt_download_bytes_total`                 | `Counter` | 客户端下载字节数                |   ✅    |  ✅   |
+| `pt_upload_bytes_total`                   | `Counter` | 客户端上传字节数                |   ✅    |  ✅   |
+| `pt_download_speed`                       |  `Gauge`  | 客户端下载速度                 |   ✅    |  ✅   |
+| `pt_upload_speed`                         |  `Gauge`  | 客户端上传速度                 |   ✅    |  ✅   |
+| `pt_download_speed_bytes`                 |  `Gauge`  | 客户端下载速度字节数              |   ✅    |  ✅   |
+| `pt_upload_speed_bytes`                   |  `Gauge`  | 客户端上传速度字节数              |   ✅    |  ✅   |
+| `pt_tracker_torrent`                      |  `Counter`| 种子                      |    ✅    |  ✅   |
+| `pt_tracker_torrent_status`               | `Gauge`   | 种子状态                    |   ✅     |  ✅   |
+| `pt_tracker_torrent_size_bytes`           |  `Gauge`  | 种子大小                    |   ✅    |  ✅   |
+| `pt_tracker_torrent_download_bytes_total` | `Counter` | 种子下载字节数                 |   ✅    |  ✅   |
+| `pt_tracker_torrent_upload_bytes_total`   | `Counter` | 种子上传字节数                 |   ✅    |  ✅   |
+| `pt_torrents_count`                       |  `Gauge`  | 站点种子转态数量总数 downloader兼容 |   ✅    |  ✅   |
 
 ### pt_tracker_status 值说明
 
