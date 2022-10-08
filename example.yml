@@ -1,10 +1,19 @@
 config:
   logLevel: info
   listen: :9200
+  downloader-exporter: false
+  lang: zh
+  timeout: 5
   rewrite:
     www.google.com: Google
+  default:
+    max-up-speed: 0Gbps
+    max-down-speed: 0Gbps
+
 Host-QB:
-  type: "qbittorrent"
-  host: "http://127.0.0.1"
-  username: "admin"
-  password: "adminadmin"
+  type: qbittorrent
+  host: http://127.0.0.1
+  username: admin
+  password: adminadmin
+  max-up-speed: 1Gbps
+  max-down-speed: 1Gbps
