@@ -4,6 +4,7 @@ config:
   downloader-exporter: false
   lang: zh
   timeout: 5
+  UseCategoryAsTracker: false
   rewrite:
     www.google.com: Google
   default:

@@ -62,11 +62,12 @@ func main() {
 				},
 			)
 			collOpt := collector.Options{
-				Lang:               viper.GetString("config.lang"),
-				MaxUpSpeed:         viper.GetInt("config.maxupspeed"),
-				MaxDownSpeed:       viper.GetInt("config.maxdownspeed"),
-				DownloaderExporter: viper.GetBool("config.downloader-exporter"),
-				RewriteTracker:     viper.GetStringMapString("config.rewrite"),
+				Lang:                 viper.GetString("config.lang"),
+				MaxUpSpeed:           viper.GetInt("config.maxupspeed"),
+				MaxDownSpeed:         viper.GetInt("config.maxdownspeed"),
+				DownloaderExporter:   viper.GetBool("config.downloader-exporter"),
+				RewriteTracker:       viper.GetStringMapString("config.rewrite"),
+				UseCategoryAsTracker: viper.GetBool("config.UseCategoryAsTracker"),
 			}
 			coll := collector.NewQbittorrentCollector(
 				hostName,

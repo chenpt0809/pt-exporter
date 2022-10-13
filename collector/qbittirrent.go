@@ -227,6 +227,10 @@ func (q *QbittorrentCollector) Collect(metrics chan<- prometheus.Metric) {
 		if !isok {
 			trackerName = trackerAddress
 		}
+		// 判断是否用分类名称重写分类是否为空
+		if q.Options.UseCategoryAsTracker && torrent.Category != "" {
+			trackerName = torrent.Category
+		}
 		// torrent
 		if !q.Options.DownloaderExporter {
 			metrics <- prometheus.MustNewConstMetric(
