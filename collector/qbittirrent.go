@@ -131,7 +131,7 @@ func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options
 		[]string{"status", "tracker"},
 		ConstLabels,
 	)
-	//
+	// 服务器最大上传带宽
 	if o.MaxDownSpeed != 0 {
 		qbColl.maxDownloadSpeedBytes = prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace:   namespace,
@@ -141,6 +141,7 @@ func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options
 		})
 		qbColl.maxDownloadSpeedBytes.Set(float64(o.MaxDownSpeed))
 	}
+	// 服务器最大下载带宽
 	if o.MaxUpSpeed != 0 {
 		qbColl.maxUploadSpeedBytes = prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace:   namespace,

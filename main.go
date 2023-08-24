@@ -52,6 +52,7 @@ func main() {
 		clientType := viper.GetStringMapString(configKey)["type"]
 		// 根据下载器配置
 		switch clientType {
+		// 创建qb对象
 		case "qbittorrent":
 			qbc := client.NewQbittorrentClient(
 				client.QbittorrentOptions{
