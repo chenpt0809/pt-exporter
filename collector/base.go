@@ -15,32 +15,20 @@ type Options struct {
 }
 
 type Collector struct {
-	up                 prometheus.Gauge
-	downloadBytesTotal *prometheus.Desc
-	uploadBytesTotal   *prometheus.Desc
-	downloadSpeedBytes prometheus.Gauge
-	uploadSpeedBytes   prometheus.Gauge
-	freeSpaceOnDisk    prometheus.Gauge
-	//
-	torrent        *prometheus.Desc
-	trackerTorrent *prometheus.Desc
-	//
-	torrentSizeBytes        *prometheus.Desc
-	trackerTorrentSizeBytes *prometheus.Desc
-	//
-	torrentStatus        *prometheus.Desc
-	trackerTorrentStatus *prometheus.Desc
-	//
-	torrentDownloadBytesTotal        *prometheus.Desc
-	trackerTorrentDownloadBytesTotal *prometheus.Desc
-	//
-	torrentUploadBytesTotal        *prometheus.Desc
-	trackerTorrentUploadBytesTotal *prometheus.Desc
-	//
-	torrentsCount *prometheus.Desc
-	//
-	maxDownloadSpeedBytes prometheus.Gauge
-	maxUploadSpeedBytes   prometheus.Gauge
+	up                        prometheus.Gauge
+	downloadBytesTotal        *prometheus.Desc
+	uploadBytesTotal          *prometheus.Desc
+	downloadSpeedBytes        prometheus.Gauge
+	uploadSpeedBytes          prometheus.Gauge
+	freeSpaceOnDisk           prometheus.Gauge
+	torrent                   *prometheus.Desc
+	torrentSizeBytes          *prometheus.Desc
+	torrentStatus             *prometheus.Desc
+	torrentDownloadBytesTotal *prometheus.Desc
+	torrentUploadBytesTotal   *prometheus.Desc
+	torrentsCount             *prometheus.Desc
+	maxDownloadSpeedBytes     prometheus.Gauge
+	maxUploadSpeedBytes       prometheus.Gauge
 }
 
 func NewCollector(name string, host string, clientType string, o Options) *Collector {
@@ -99,13 +87,69 @@ func NewCollector(name string, host string, clientType string, o Options) *Colle
 		Help:        "当前上传速度 单位字节",
 		ConstLabels: ConstLabels,
 	})
-	//
-	Coll.trackerTorrent = prometheus.NewDesc(
-		fqNameRewrite(namespace+"_torrent", namespace+"_tracker_torrent", o.DownloaderExporter),
+	// 种子
+	Coll.torrent = prometheus.NewDesc(
+		fqNameRewrite(namespace+"_tracker_torrent", namespace+"_torrent", o.DownloaderExporter),
 		"种子",
 		[]string{"torrent_hash", "torrent_name", "tracker"},
 		ConstLabels,
 	)
+	// 种子状态
+	Coll.torrentStatus = prometheus.NewDesc(
+		fqNameRewrite(namespace+"_tracker_torrent_status", namespace+"_torrent_status", o.DownloaderExporter),
+		"种子状态",
+		[]string{"torrent_hash", "torrent_name", "tracker"},
+		ConstLabels,
+	)
+	// 种子选中大小
+	Coll.torrentSizeBytes = prometheus.NewDesc(
+		fqNameRewrite(namespace+"_tracker_torrent_size_bytes", namespace+"_torrent_size_bytes", o.DownloaderExporter),
+		"种子大小 单位字节",
+		[]string{"torrent_hash", "torrent_name", "tracker"},
+		ConstLabels,
+	)
+	// 种子已下载
+	Coll.torrentDownloadBytesTotal = prometheus.NewDesc(
+		fqNameRewrite(namespace+"_tracker_torrent_download_bytes_total", namespace+"_torrent_download_bytes_total", o.DownloaderExporter),
+		"种子已下载 单位字节",
+		[]string{"torrent_hash", "torrent_name", "tracker"},
+		ConstLabels,
+	)
+	// 种子已上传
+	Coll.torrentUploadBytesTotal = prometheus.NewDesc(
+		fqNameRewrite(namespace+"_tracker_torrent_upload_bytes_total", namespace+"_torrent_upload_bytes_total", o.DownloaderExporter),
+		"种子已上传 单位字节",
+		[]string{"torrent_hash", "torrent_name", "tracker"},
+		ConstLabels,
+	)
+	if o.DownloaderExporter {
+		Coll.torrentsCount = prometheus.NewDesc(
+			namespace+"_torrents_count",
+			"种子计数",
+			[]string{"status", "tracker"},
+			ConstLabels,
+		)
+	}
+	// 服务器最大上传带宽
+	if o.MaxDownSpeed != 0 {
+		Coll.maxDownloadSpeedBytes = prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace:   namespace,
+			Name:        "max_download_speed_bytes",
+			Help:        "服务器最大上传带宽 ",
+			ConstLabels: ConstLabels,
+		})
+		Coll.maxDownloadSpeedBytes.Set(float64(o.MaxDownSpeed))
+	}
+	// 服务器最大下载带宽
+	if o.MaxUpSpeed != 0 {
+		Coll.maxUploadSpeedBytes = prometheus.NewGauge(prometheus.GaugeOpts{
+			Namespace:   namespace,
+			Name:        "max_upload_speed_bytes",
+			Help:        "服务器最大上传带宽",
+			ConstLabels: ConstLabels,
+		})
+		Coll.maxUploadSpeedBytes.Set(float64(o.MaxDownSpeed))
+	}
 
 	return &Coll
 }
