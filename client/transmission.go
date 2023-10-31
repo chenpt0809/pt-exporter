@@ -6,7 +6,7 @@ import (
 )
 
 type TransmissionClient struct {
-	client   *transmissionrpc.Client
+	Client   *transmissionrpc.Client
 	Address  string
 	Username string
 	Password string
@@ -34,6 +34,6 @@ func NewTransmissionClient(Options TransmissionOptions) *TransmissionClient {
 	if err != nil {
 		global.Logger.Error("创建：TransmissionClient失败")
 	}
-	c.client = tc
+	c.Client = tc
 	return c
 }

@@ -25,8 +25,7 @@ type QbittorrentCollector struct {
 	torrentsCount                    *prometheus.Desc
 	maxDownloadSpeedBytes            prometheus.Gauge
 	maxUploadSpeedBytes              prometheus.Gauge
-
-	mutex sync.Mutex
+	mutex                            sync.Mutex
 }
 
 func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options) *QbittorrentCollector {
@@ -179,9 +178,7 @@ func (q *QbittorrentCollector) Collect(metrics chan<- prometheus.Metric) {
 	if !q.Options.DownloaderExporter {
 		if q.Options.MaxDownSpeed != 0 {
 			metrics <- q.maxDownloadSpeedBytes
-		}
-		if q.Options.MaxUpSpeed != 0 {
-			metrics <- q.maxUploadSpeedBytes
+
 		}
 	}
 
