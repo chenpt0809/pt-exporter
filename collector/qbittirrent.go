@@ -25,8 +25,7 @@ type QbittorrentCollector struct {
 	torrentsCount                    *prometheus.Desc
 	maxDownloadSpeedBytes            prometheus.Gauge
 	maxUploadSpeedBytes              prometheus.Gauge
-
-	mutex sync.Mutex
+	mutex                            sync.Mutex
 }
 
 func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options) *QbittorrentCollector {
@@ -131,7 +130,7 @@ func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options
 		[]string{"status", "tracker"},
 		ConstLabels,
 	)
-	//
+	// 服务器最大上传带宽
 	if o.MaxDownSpeed != 0 {
 		qbColl.maxDownloadSpeedBytes = prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace:   namespace,
@@ -141,6 +140,7 @@ func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options
 		})
 		qbColl.maxDownloadSpeedBytes.Set(float64(o.MaxDownSpeed))
 	}
+	// 服务器最大下载带宽
 	if o.MaxUpSpeed != 0 {
 		qbColl.maxUploadSpeedBytes = prometheus.NewGauge(prometheus.GaugeOpts{
 			Namespace:   namespace,
@@ -178,9 +178,7 @@ func (q *QbittorrentCollector) Collect(metrics chan<- prometheus.Metric) {
 	if !q.Options.DownloaderExporter {
 		if q.Options.MaxDownSpeed != 0 {
 			metrics <- q.maxDownloadSpeedBytes
-		}
-		if q.Options.MaxUpSpeed != 0 {
-			metrics <- q.maxUploadSpeedBytes
+
 		}
 	}
 
@@ -226,6 +224,10 @@ func (q *QbittorrentCollector) Collect(metrics chan<- prometheus.Metric) {
 		trackerName, isok := q.Options.RewriteTracker[trackerAddress]
 		if !isok {
 			trackerName = trackerAddress
+		}
+		// 判断是否用分类名称重写分类是否为空
+		if q.Options.UseCategoryAsTracker && torrent.Category != "" {
+			trackerName = torrent.Category
 		}
 		// torrent
 		if !q.Options.DownloaderExporter {

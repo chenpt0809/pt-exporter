@@ -52,6 +52,7 @@ func main() {
 		clientType := viper.GetStringMapString(configKey)["type"]
 		// 根据下载器配置
 		switch clientType {
+		// 创建qb对象
 		case "qbittorrent":
 			qbc := client.NewQbittorrentClient(
 				client.QbittorrentOptions{
@@ -62,11 +63,12 @@ func main() {
 				},
 			)
 			collOpt := collector.Options{
-				Lang:               viper.GetString("config.lang"),
-				MaxUpSpeed:         viper.GetInt("config.maxupspeed"),
-				MaxDownSpeed:       viper.GetInt("config.maxdownspeed"),
-				DownloaderExporter: viper.GetBool("config.downloader-exporter"),
-				RewriteTracker:     viper.GetStringMapString("config.rewrite"),
+				Lang:                 viper.GetString("config.lang"),
+				MaxUpSpeed:           viper.GetInt("config.maxupspeed"),
+				MaxDownSpeed:         viper.GetInt("config.maxdownspeed"),
+				DownloaderExporter:   viper.GetBool("config.downloader-exporter"),
+				RewriteTracker:       viper.GetStringMapString("config.rewrite"),
+				UseCategoryAsTracker: viper.GetBool("config.UseCategoryAsTracker"),
 			}
 			coll := collector.NewQbittorrentCollector(
 				hostName,
