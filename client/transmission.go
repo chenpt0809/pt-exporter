@@ -2,13 +2,16 @@ package client
 
 import (
 	"github.com/chenpt0809/pt-exporter/global"
+	"github.com/chenpt0809/pt-exporter/utils"
 	"github.com/hekmon/transmissionrpc/v2"
 )
 
 type TransmissionClient struct {
 	Client   *transmissionrpc.Client
+	Host     string
+	Port     int
 	Address  string
-	Username string
+	UserName string
 	Password string
 	baseURL  string
 	sid      string
@@ -16,21 +19,28 @@ type TransmissionClient struct {
 }
 
 type TransmissionOptions struct {
-	Host           string
-	Port           int
+	Url            string
 	UserName       string
 	Password       string
 	RequestTimeOut int
 }
 
 func NewTransmissionClient(Options TransmissionOptions) *TransmissionClient {
+	host, port, err := utils.GetHostAndPort(Options.Url)
+	if err != nil {
+		global.Logger.Error("无法解析的URL:" + Options.Url)
+		return nil
+	}
 	c := &TransmissionClient{
-		Address:  Options.Host,
-		Username: Options.UserName,
+		Host:     host,
+		Port:     port,
+		Address:  Options.Url,
+		UserName: Options.UserName,
 		Password: Options.Password,
 	}
+
 	global.Logger.Debug("创建：TransmissionClient")
-	tc, err := transmissionrpc.New(Options.Host, Options.UserName, Options.Password, &transmissionrpc.AdvancedConfig{Port: uint16(Options.Port)})
+	tc, err := transmissionrpc.New(c.Host, c.UserName, c.Password, &transmissionrpc.AdvancedConfig{Port: uint16(c.Port)})
 	if err != nil {
 		global.Logger.Error("创建：TransmissionClient失败")
 	}
