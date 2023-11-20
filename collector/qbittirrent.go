@@ -51,7 +51,7 @@ func NewQbittorrentCollector(name string, c *client.QbittorrentClient, o Options
 	qbColl.up = prometheus.NewGauge(prometheus.GaugeOpts{
 		Namespace:   namespace,
 		Name:        "up",
-		Help:        "是否启动",
+		Help:        "客户端是否可用",
 		ConstLabels: ConstLabels,
 	})
 	// 总下载量

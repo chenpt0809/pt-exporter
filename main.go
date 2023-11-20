@@ -77,6 +77,31 @@ func main() {
 			)
 			prometheus.MustRegister(coll)
 			global.Logger.Info("添加监控完成\t" + hostName)
+		case "transmission":
+			trc := client.NewTransmissionClient(
+				client.TransmissionOptions{
+					Url:            viper.GetStringMapString(configKey)["host"],
+					UserName:       viper.GetStringMapString(configKey)["username"],
+					Password:       viper.GetStringMapString(configKey)["password"],
+					RequestTimeOut: viper.GetInt("config.timeout"),
+				},
+			)
+			collOpt := collector.Options{
+				Lang:                 viper.GetString("config.lang"),
+				MaxUpSpeed:           viper.GetInt("config.maxupspeed"),
+				MaxDownSpeed:         viper.GetInt("config.maxdownspeed"),
+				DownloaderExporter:   viper.GetBool("config.downloader-exporter"),
+				RewriteTracker:       viper.GetStringMapString("config.rewrite"),
+				UseCategoryAsTracker: viper.GetBool("config.UseCategoryAsTracker"),
+			}
+
+			coll := collector.NewTransmissionCollector(
+				hostName,
+				trc,
+				collOpt,
+			)
+			prometheus.MustRegister(coll)
+			global.Logger.Info("添加监控完成\t" + hostName)
 		default:
 			global.Logger.Error("暂时不支持下载器类型")
 		}
