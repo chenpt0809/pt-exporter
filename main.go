@@ -54,6 +54,7 @@ func main() {
 		switch clientType {
 		// 创建qb对象
 		case "qbittorrent":
+			global.Logger.Debug("初始化 qbittorrent 客户端\t" + hostName)
 			qbc := client.NewQbittorrentClient(
 				client.QbittorrentOptions{
 					Url:            viper.GetStringMapString(configKey)["host"],
@@ -78,6 +79,7 @@ func main() {
 			prometheus.MustRegister(coll)
 			global.Logger.Info("添加监控完成\t" + hostName)
 		case "transmission":
+			global.Logger.Debug("初始化 transmission 客户端\t" + hostName)
 			trc := client.NewTransmissionClient(
 				client.TransmissionOptions{
 					Url:            viper.GetStringMapString(configKey)["host"],
