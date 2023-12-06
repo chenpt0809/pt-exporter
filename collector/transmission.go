@@ -2,9 +2,13 @@ package collector
 
 import (
 	"context"
+	"fmt"
 	"github.com/chenpt0809/pt-exporter/client"
+	"github.com/chenpt0809/pt-exporter/global"
 	"github.com/prometheus/client_golang/prometheus"
+	"net/url"
 	"sync"
+	"time"
 )
 
 type TransmissionCollector struct {
@@ -57,17 +61,26 @@ func (t *TransmissionCollector) Collect(metrics chan<- prometheus.Metric) {
 			metrics <- t.Coll.maxUploadSpeedBytes
 		}
 	}
+	var stime int64
+	stime = time.Now().Unix()
 	status, err := t.transmissionClient.Client.SessionStats(context.TODO())
 	if err != nil {
+		global.Logger.Debug(fmt.Sprintf("%s 获取状态信息失败 %e", t.clientName, err))
 		t.Coll.up.Set(0)
 		metrics <- t.Coll.up
 		return
+	} else {
+		global.Logger.Debug(fmt.Sprintf("%s 获取状态信息成功 时间:%d秒", t.clientName, time.Now().Unix()-stime))
 	}
+	stime = time.Now().Unix()
 	torrents, err := t.transmissionClient.Client.TorrentGetAll(context.TODO())
 	if err != nil {
+		global.Logger.Debug(fmt.Sprintf("%s 获取种子信息失败 %e", t.clientName, err))
 		t.Coll.up.Set(0)
 		metrics <- t.Coll.up
 		return
+	} else {
+		global.Logger.Debug(fmt.Sprintf("%s 获取种子信息成功 时间:%d秒", t.clientName, time.Now().Unix()-stime))
 	}
 	downloadDir, err := t.transmissionClient.Client.SessionArgumentsGet(context.TODO(), []string{"download-dir"})
 	if err != nil {
@@ -92,7 +105,86 @@ func (t *TransmissionCollector) Collect(metrics chan<- prometheus.Metric) {
 	metrics <- t.Coll.uploadSpeedBytes
 	t.Coll.freeSpaceOnDisk.Set(freeSpace.Byte())
 	metrics <- t.Coll.freeSpaceOnDisk
+	for _, torrent := range torrents {
+		trackerUrl, _ := url.Parse(torrent.Trackers[0].Announce)
+		trackerAddress := trackerUrl.Hostname()
+		trackerName, isok := t.Options.RewriteTracker[trackerAddress]
+		if !isok {
+			trackerName = trackerAddress
+		}
+		if !t.Options.DownloaderExporter {
+			metrics <- prometheus.MustNewConstMetric(
+				t.Coll.torrent,
+				prometheus.CounterValue,
+				float64(1),
+				*torrent.HashString,
+				*torrent.Name,
+				trackerName,
+			)
+		}
+		if !t.Options.DownloaderExporter {
+			metrics <- prometheus.MustNewConstMetric(
+				t.Coll.torrentSizeBytes,
+				prometheus.GaugeValue,
+				float64(*torrent.TotalSize),
+				*torrent.HashString,
+				*torrent.Name,
+				trackerName,
+			)
+		}
+		metrics <- prometheus.MustNewConstMetric(
+			t.Coll.torrentDownloadBytesTotal,
+			prometheus.CounterValue,
+			float64(*torrent.DownloadedEver),
+			*torrent.HashString,
+			*torrent.Name,
+			trackerName,
+		)
+		// 种子上传字节数
+		metrics <- prometheus.MustNewConstMetric(
+			t.Coll.torrentUploadBytesTotal,
+			prometheus.CounterValue,
+			float64(*torrent.UploadedEver),
+			*torrent.HashString,
+			*torrent.Name,
+			trackerName,
+		)
+	}
+
 	t.Coll.up.Set(1)
 	metrics <- t.Coll.up
+}
 
+func (t *TransmissionCollector) RewriteStatusStr(status string) string {
+	if t.Options.Lang == "zh" {
+		switch status {
+		case "downloading":
+			return "下载中"
+		case "seeding":
+			return "上传中"
+		case "checking":
+			return "校验"
+		case "check pending", "download pending", "seed pending":
+			return "排队"
+		case "stopped":
+			return "暂停"
+		default:
+			return status
+		}
+	} else {
+		switch status {
+		case "downloading":
+			return "Downloading"
+		case "seeding":
+			return "Uploading"
+		case "checking":
+			return "Checking"
+		case "check pending", "download pending", "seed pending":
+			return "Queued"
+		case "stopped":
+			return "Paused"
+		default:
+			return status
+		}
+	}
 }

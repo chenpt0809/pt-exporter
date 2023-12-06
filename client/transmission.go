@@ -31,6 +31,9 @@ func NewTransmissionClient(Options TransmissionOptions) *TransmissionClient {
 		global.Logger.Error("无法解析的URL:" + Options.Url)
 		return nil
 	}
+	if port == 0 {
+		port = 80
+	}
 	c := &TransmissionClient{
 		Host:     host,
 		Port:     port,
@@ -38,7 +41,6 @@ func NewTransmissionClient(Options TransmissionOptions) *TransmissionClient {
 		UserName: Options.UserName,
 		Password: Options.Password,
 	}
-
 	global.Logger.Debug("创建：TransmissionClient")
 	tc, err := transmissionrpc.New(c.Host, c.UserName, c.Password, &transmissionrpc.AdvancedConfig{Port: uint16(c.Port)})
 	if err != nil {
